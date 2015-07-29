@@ -1,0 +1,4 @@
+Site,Lat,Lon,Altitude
+Klerefontein,-30.9,21.9,1000
+Kuntunse,5.75,-0.30,100
+
