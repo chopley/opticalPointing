@@ -1,0 +1,65 @@
+function [fm,sa]=stepbystep_fit(om,ide,obs,filename)
+% [fm,rmssa]=stepbystep_fit(om,ide,obs)
+%
+% Fit pointing model data freeing each parameter in turn
+
+% Plot residuals against online model
+figure(1)
+  gof = inf;
+plot_res(om,ide,obs,filename,gof,1);
+
+% Start with only online enc zeros
+fm=om; fm([1,2,3,4,5,6,7])=0;
+
+% First off with only encoder zero points free
+[fm, sa, gof] = do_fit_opt(fm,[0,0,0,0,0,0,0,1,1],obs,ide);
+figure(2)
+plot_res(fm,ide,obs,filename,gof,2);
+
+% Add el tilt free
+[fm, sa, gof] = do_fit_opt(fm,[0,0,0,0,1,0,0,1,1],obs,ide);
+figure(3)
+plot_res(fm,ide,obs,filename,gof,3);
+
+% Kick out massively bogus points
+if(1)
+  [mva.az,mva.el]=pointing_model(fm,ide.az,ide.el);
+  sa=spaceangle(obs.az,obs.el,mva.az,mva.el,'deg');
+  ind=sa<2;
+  obs=structcut(obs,ind);
+  ide=structcut(ide,ind);
+end
+
+% Add az tilt free
+[fm, sa, gof] = do_fit_opt(fm,[0,0,1,1,1,0,0,1,1],obs,ide);
+figure(5)
+plot_res(fm,ide,obs,filename,gof,5);
+
+keyboard;
+
+
+
+% Add collimation free
+[fm, sa, gof] = do_fit_opt(fm,[0,0,1,1,1,1,0,1,1],obs,ide);
+figure(4)
+plot_res(fm,ide,obs,filename,gof,4);
+
+
+% Add flexure free
+[fm, sa, gof] = do_fit_opt(fm,[1,1,1,1,1,1,0,1,1],obs,ide);
+figure(6)
+sa1=plot_res(fm,ide,obs,filename,gof,6);
+
+
+% Finally reject points >3 sigma and refit
+if(1)
+  ind=sa<rms(sa)*2;
+  obsc=structcut(obs,ind);
+  idec=structcut(ide,ind);
+  [fm, sa, gof] = do_fit_opt(fm,[1,1,1,1,1,1,0,1,1],obsc,idec);
+  figure(7)
+  sa = plot_res(fm,idec,obsc,filename,gof,7);
+end
+
+
+return

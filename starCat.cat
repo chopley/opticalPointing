@@ -1,0 +1,12 @@
+#HEADER LINE: Star catalog for the ASTT of form name,ra,dec-
+name,ra,dec
+alphyd,18:03:15.98,10:31:52.9
+blphyd,14:03:15.98,10:31:52.9
+clphyd,10:03:15.98,10:31:52.9
+cclphyd,11:03:15.98,10:31:52.9
+dlphyd,06:03:15.98,10:31:52.9
+djphyd,07:03:15.98,10:31:52.9
+elphyd,02:03:15.98,10:31:52.9
+flphyd,22:03:15.98,10:31:52.9
+sun,06:20:8,23:21:14
+venus,09:23:58,16:23:02
