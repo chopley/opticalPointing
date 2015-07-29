@@ -4,16 +4,24 @@
 #2) Find the next star that will pass through the elevation,azimuth, as well as the time it will pass through
 #3) Output the star, and the time it will pass through
 
+#Rev 1.0 29/7/2015 
+#Call as follows
+# python findStars.py 90 2 (where 90 is the elevation position and 2 is the field of view of the camera)
+# This will return a list of appropriate stars for the Ghana Dish, RA, DEC, time of transit, elevation angle at transit
+#TO DO: 
+#1) Add appropriate functionality for location (probably a text file with location names and lat/long/altitude).
+#2) Also work out if the transit is North or South facing (pretty simple)
+
 #Written by Charles Copley 28/7/2015
-import pandas,numpy,ephem
+import pandas,numpy,ephem,sys
 #define the column layout
 
-elevation = 90
-elevationRadians = numpy.deg2rad(elevation)
+elevation = float(sys.argv[1]) #first argument is the elevation position we are looking at
+elevationRadians = numpy.deg2rad(float(elevation))
 azimuth = 180
 latitude = '5.75'
 longitude = '-0.30'
-fieldOfView = 2#size of field of view in degrees
+fieldOfView = float(sys.argv[2]) #second argument is the field of view size
 
 
 
