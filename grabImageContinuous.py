@@ -32,6 +32,9 @@ while(1):
 	#read in the image from the frame grabber
 	filename=datetime.datetime.utcnow().strftime("%Y-%m-%d-%H%M%S")
 	ret,frame = cam0t.read()
+	for i in range(1,10):
+		ret,frame2 = cam0t.read()
+		frame = cv2.addWeighted(frame,0.5,frame2,0.5,0)
 	cv2.imwrite(filename+'.png',frame)
 	#v2.imshow("Test",frame)
 	print filename
