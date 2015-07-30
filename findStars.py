@@ -82,6 +82,9 @@ for i in range(0,len(starList)):
 			if(source.transit_alt.norm>numpy.radians(elevation-fieldOfView) and  (source.transit_alt.norm<numpy.radians(elevation+fieldOfView))):
 				if(DirectionStr==direction):
 					print aa
+					f = open('StarPositions.txt','a')
+					f.write(aa)
+					f.close()
 		except:
 			aa = '%s %s %s' %(starList['Name'][i],starList['RA'][i],starList['DEC'][i])
 
