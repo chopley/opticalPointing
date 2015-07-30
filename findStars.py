@@ -85,7 +85,14 @@ for i in range(0,len(starList)):
 			outputString = '%s\t%s\t%s\t%s\t%s\t%s\t%2.2f' %(starList['Name'][i],starList['RA'][i],starList['DEC'][i],source.transit_time,source.transit_alt.norm,DirectionStr,zenithAngle)
 			if(source.transit_alt.norm>numpy.radians(elevation-fieldOfView) and  (source.transit_alt.norm<numpy.radians(elevation+fieldOfView))):
 				if(DirectionStr==direction):
+<<<<<<< HEAD
 					print outputString
+=======
+					print aa
+					f = open('StarPositions.txt','a')
+					f.write(aa)
+					f.close()
+>>>>>>> 306f96ee15fc86357ee33987fa7b7eadd65a3aaf
 		except:
 			outputString = '%s %s %s' %(starList['Name'][i],starList['RA'][i],starList['DEC'][i])
 
