@@ -68,6 +68,7 @@ print Kuntunse.lat,Kuntunse.lon,elevation
 
 #and loop through and calculate everything
 source = ephem.FixedBody()
+fg = open('StarPositions.txt','w')
 for i in range(0,len(starList)):
 	source._ra = starList['RA'][i]
 	source._dec = starList['DEC'][i]
@@ -87,12 +88,13 @@ for i in range(0,len(starList)):
 				if(DirectionStr==direction):
 					print outputString
 					print aa
-					f = open('StarPositions.txt','a')
-					f.write(aa)
-					f.close()
+					fg.write('hello')
+					fg.write('\n')
 		except:
 			outputString = '%s %s %s' %(starList['Name'][i],starList['RA'][i],starList['DEC'][i])
 
+print 'closing the file'
+fg.close()
 
 
 
