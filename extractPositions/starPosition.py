@@ -1,6 +1,8 @@
 #Script that will do the following:
-#1) Take as input star name from starList.cat
-#2) Output positions of the star at a given time +-30 seconds
+#1) Read in positions of stars from images in pixels
+#2) Use a catalog to calculate the expected positions of the stars
+#3) Calculate the az,el position of the centre of the image
+
 #Written by Charles Copley,AVN Science
 
 

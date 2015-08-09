@@ -1,13 +1,15 @@
 #Script that will do the following:
-#1) Take as input star name from starList.cat
-#2) Output positions of the star at a given time +-30 seconds
+#1) Read in positions of stars from images in pixels
+#2) Use a catalog to calculate the expected positions of the stars
+#3) Calculate the az,el position of the centre of the image
+
 #Written by Charles Copley,AVN Science
 
 
 #Rev 1.0 06/08/2015 
 
 
-import pandas,numpy,ephem,sys,cv2
+import pandas,numpy,ephem,sys,cv2,datetime
 #define the column layout
 
 def extractImage(time):
@@ -24,14 +26,14 @@ def extractImage(time):
 	dCol = sourceCol-centerCol
 	dRow = sourceRow-centerRow
 	snr = numpy.max(img)/numpy.mean(img)
-	return (dCol,dRow,snr)
+	return (dCol,dRow,snr,sourceCol,sourceRow)
 
 def estimateStarPosition(timeObserved,starName,siteDetail,starList):
 	Kuntunse=ephem.Observer()
 	Kuntunse.lat=(siteDetail['Lat'])*ephem.degree
 	Kuntunse.lon=(siteDetail['Lon'])*ephem.degree
 	elevation=siteDetail['Altitude']
-	print Kuntunse.lat,Kuntunse.lon,elevation
+	#print Kuntunse.lat,Kuntunse.lon,elevation
 	indexLoc = starList[starList['Name']==starName].index.tolist()	
 	source = ephem.FixedBody()
 	source._ra = starList['RA'][indexLoc[0]]
@@ -39,10 +41,51 @@ def estimateStarPosition(timeObserved,starName,siteDetail,starList):
 	source._epoch=ephem.J2000
 	Kuntunse.date=timeObserved
 	source.compute(Kuntunse)
-	a='%s %2.2f %2.2f' %(timeObserved,numpy.rad2deg(source.az),numpy.rad2deg(source.alt))
-	print a
+#	a='%s %s %2.2f %2.2f' %(starName,timeObserved,numpy.rad2deg(source.az),numpy.rad2deg(source.alt))
 	return (timeObserved,source.az.norm/ephem.degree,source.alt/ephem.degree)
 
+def cartRotate(x,y,angle):
+	x2 = x*numpy.cos(angle) + y*numpy.sin(angle)
+	y2 = -x*numpy.sin(angle) + y*numpy.cos(angle)
+	return (x2,y2)	
+
+def analyseImage(image1,image2,rotAngle,interpValues):
+	az1 = image1[3]
+	az2 = image2[3]
+	dAz=az2-az1
+	if(dAz>=180):
+		dAz=dAz-360
+	if(dAz<=-180):
+		dAz=dAz+360
+	el1 = image1[4]
+	el2 = image2[4]
+	dEl=el2-el1
+	xpix1=image1[1]
+	xpix2=image2[1]
+	ypix1=image1[2]
+	ypix2=image2[2]
+	dXpix = float(xpix2-xpix1)
+	dYpix = float(ypix2-ypix1)
+	distanceAngle = numpy.sqrt(((dAz)*numpy.cos(numpy.radians(el2)))**2 + (dEl)**2)
+	distancePixel = numpy.sqrt(((dXpix))**2 + (dYpix)**2)
+	rotationAngle=numpy.radians(rotAngle)
+	
+	(xp1,yp1) =  cartRotate(xpix1,ypix1,rotationAngle)
+	(xp2,yp2) =  cartRotate(xpix2,ypix2,rotationAngle)
+	
+	i1=(xp1,yp1)
+	i2=(xp2,yp2)	
+	distanceScale = distancePixel/distanceAngle
+
+	zeroAz = interpValues[0]
+	zeroEl = interpValues[1]
+	return (i1,i2,distanceScale)
+
+#values that require setting	
+#Angle of the azimuth axis to the Image horizontal axis
+rotationAngle=14.4
+#Number of pixels to one degree
+Scale=160.
 	
 #starName = sys.argv[1]
 starName = 'KapCen'
@@ -51,11 +94,13 @@ date = '2015/08/02'
 #siteName = sys.argv[2]
 siteName = 'Klerefontein'
 
-#read in the list of sites
+#read in the list of possible observing sites
 sites = pandas.read_csv('sites.txt')
 siteDetail=sites[sites['Site']==siteName]
 print siteDetail
 
+#file that contains the star name, and time of observations
+starDetail = pandas.read_csv('starLog.txt')
 
 
 colspecs=[(0,4),(6,15),(16,26),(28,40),(41,53),(54,65),(66,71)]
@@ -63,72 +108,80 @@ colspecs=[(0,4),(6,15),(16,26),(28,40),(41,53),(54,65),(66,71)]
 starList=pandas.read_fwf('starList.cat',colspecs=colspecs)
 	
 
-starName1 = 'KapCen'
-time1='2015-08-02-164753'
-time2='2015-08-02-164537'
-time3='2015-08-02-164355'
-
-starName2 = 'DelLup'
-time4='2015-08-02-170957'
-time5 = '2015-08-02-171031'
-time6 = '2015-08-02-171139'
-
-time1S= datetime.datetime.strptime(time1,'%Y-%m-%d-%H%M%S')
-time2S= datetime.datetime.strptime(time2,'%Y-%m-%d-%H%M%S')
-time3S= datetime.datetime.strptime(time3,'%Y-%m-%d-%H%M%S')
-time4S= datetime.datetime.strptime(time4,'%Y-%m-%d-%H%M%S')
-time5S= datetime.datetime.strptime(time5,'%Y-%m-%d-%H%M%S')
-time6S= datetime.datetime.strptime(time6,'%Y-%m-%d-%H%M%S')
-
-(timeout1,az1,el1)= estimateStarPosition(time1S,starName1,siteDetail,starList)
-(timeout2,az2,el2)= estimateStarPosition(time2S,starName1,siteDetail,starList)
-(timeout3,az3,el3)= estimateStarPosition(time3S,starName1,siteDetail,starList)
-(pixcol1,pixrow1,snr1) = extractImage(time1)
-(pixcol2,pixrow2,snr2) = extractImage(time2)
-(pixcol3,pixrow3,snr3) = extractImage(time3)
-
-
-(timeout4,az4,el4)= estimateStarPosition(time4S,starName2,siteDetail,starList)
-(timeout5,az5,el5)= estimateStarPosition(time5S,starName2,siteDetail,starList)
-(timeout6,az6,el6)= estimateStarPosition(time6S,starName2,siteDetail,starList)
-
-
-(pixcol4,pixrow4,snr4) = extractImage(time4)
-(pixcol5,pixrow5,snr5) = extractImage(time5)
-(pixcol6,pixrow6,snr6) = extractImage(time6)
-
-
-
-
-#Set up the observing site using the information from the text file
-Kuntunse=ephem.Observer()
-Kuntunse.lat=(siteDetail['Lat'])*ephem.degree
-Kuntunse.lon=(siteDetail['Lon'])*ephem.degree
-#get the date from the input argument earlier 
-Kuntunse.date = date 
-
-elevation=siteDetail['Altitude']
-print Kuntunse.lat,Kuntunse.lon,elevation
+starDetail['Time2']='na'
+starDetail['Az']='na'
+starDetail['El']='na'
+starDetail['dPixCol']='na'
+starDetail['dPixRow']='na'
+starDetail['SNR']='na'
+starDetail['PixCol']='na'
+starDetail['PixRow']='na'
+starDetail['Image']='na'
+starDetail['PixAz']='na'
+starDetail['PixEl']='na'
+starDetail['offAz']='na'
+starDetail['offEl']='na'
+starDetail['centreAz']='na'
+starDetail['centreEl']='na'
+for i in range(0,len(starDetail)):
+	obsTime1=starDetail['Time'][i]
+	obsTime2= datetime.datetime.strptime(obsTime1,'%Y-%m-%d-%H%M%S')
+	starName=starDetail['StarName'][i]
+	(timeout1,az1,el1)= estimateStarPosition(obsTime2,starName,siteDetail,starList)
+	(pixcol1,pixrow1,snr1,sCol1,sRow1) = extractImage(obsTime1)
+	starDetail['Time2'][i]=obsTime2	
+	starDetail['Az'][i]=az1	
+	starDetail['El'][i]=el1	
+	starDetail['dPixCol'][i]=pixcol1	
+	starDetail['dPixRow'][i]=pixrow1	
+	starDetail['SNR'][i]=snr1	
+	starDetail['PixCol'][i]=sCol1	
+	starDetail['PixRow'][i]=sRow1	
+	image1=(starDetail['StarName'][i],starDetail['dPixCol'][i],starDetail['dPixRow'][i],starDetail['Az'][i],starDetail['El'][i],starDetail['PixCol'][i],starDetail['PixCol'][i])
+	starDetail['Image'][i]=image1
+	(xp1,yp1) =  cartRotate(starDetail['dPixCol'][i],starDetail['dPixRow'][i],rotationAngle)	
+	starDetail['PixAz'][i]=xp1
+	starDetail['PixEl'][i]=yp1
+	starDetail['offAz'][i]=xp1/Scale
+	starDetail['offEl'][i]=yp1/Scale
+	starDetail['centreEl'][i]=float(starDetail['El'][i])-float(starDetail['offEl'][i])
+	starDetail['centreAz'][i]=float(starDetail['Az'][i])+float(starDetail['offAz'][i])/numpy.cos(numpy.radians(80))
+	if(float(starDetail['centreAz'][i])>180.):
+		starDetail['centreAz'][i]=starDetail['centreAz'][i]-360
+	
 
 
-#and loop through and calculate everything
-source = ephem.FixedBody()
+	
 
-indexLoc = starList[starList['Name']==starName].index.tolist()
+rotAngle=14.4
+print starDetail['StarName'][5], starDetail['StarName'][4]
+#first just check the rotation angle is correct- 
+# First make sure the two images are just azimuth movement
+# we want i1a[0]-i2a[0] to be close to zero. This implies zero elevation motion
+(i1a,i2a,distanceScalea)= analyseImage(starDetail['Image'][5],starDetail['Image'][4],rotAngle,(180,80))
+print i1a[0]-i2a[0],i1a[0]-i1a[1]
+print distanceScalea
 
-source._ra = starList['RA'][indexLoc[0]]
-source._dec = starList['DEC'][indexLoc[0]]
-source._epoch=ephem.J2000
-#ow = datetime.datetime(2015,8,02,16,43,55) #set current time
-#ow = source.transit_time.datetime() #set current time
-#ow = now-datetime.timedelta(seconds=150)
+(i1,i2,distanceScale)= analyseImage(starDetail['Image'][0],starDetail['Image'][5],rotAngle,(180,80))
+print (i1[0]-i2[0])/distanceScale,(i1[0]-i1[1])/distanceScale
+print distanceScale
 
-Kuntunse.date=timett
-source.compute(Kuntunse)
-a='%s %2.2f %2.2f' %(timett,numpy.rad2deg(source.az),numpy.rad2deg(source.alt))
-print a
+(i1,i2,distanceScale)= analyseImage(starDetail['Image'][8],starDetail['Image'][6],rotAngle,(0,80))
+print (i1[0]-i2[0])/distanceScale,(i1[0]-i1[1])/distanceScale
+print distanceScale
+
+(i1,i2,distanceScale)= analyseImage(starDetail['Image'][9],starDetail['Image'][6],rotAngle,(0,80))
+print (i1[0]-i2[0])/distanceScale,(i1[0]-i1[1])/distanceScale
+print distanceScale
+
+(i1,i2,distanceScale)= analyseImage(starDetail['Image'][7],starDetail['Image'][6],rotAngle,(0,80))
+print (i1[0]-i2[0])/distanceScale,(i1[0]-i1[1])/distanceScale
+print distanceScale
 
 
+
+
+print starDetail
 
 
 
