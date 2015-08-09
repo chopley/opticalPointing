@@ -80,7 +80,9 @@ def analyseImage(image1,image2,rotAngle,interpValues):
 	return (i1,i2,distanceScale)
 
 #values that require setting	
+#Angle of the azimuth axis to the Image horizontal axis
 rotationAngle=14.4
+#Number of pixels to one degree
 Scale=160.
 	
 #starName = sys.argv[1]

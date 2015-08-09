@@ -1,9 +1,83 @@
 rotation angle on c-bass is 279 degrees
 
-To estimate the angle take to images at different positions, but mostly in azimuth movement
+To estimate the angle take two images at different positions, but mostly in azimuth movement
 
 Then calculate the star pixel positions (x1,y1), (x2,y2)
 
 Then dy=y2-y1 and dx=x2-x1
 dTheta = numpy.arctan(dy/dx)
+
+Once you have the angle, it is fairly easy to estimate the scale ratio. 
+
+(i1,i2,distanceScale)= analyseImage(starDetail['Image'][0],starDetail['Image'][5],rotAngle,(180,80))
+print (i1[0]-i2[0])/distanceScale,(i1[0]-i1[1])/distanceScale
+print distanceScale
+
+distanceAngle = numpy.sqrt(((dAz)*numpy.cos(numpy.radians(el2)))**2 + (dEl)**2)
+distancePixel = numpy.sqrt(((dXpix))**2 + (dYpix)**2)
+distanceScale = distancePixel/distanceAngle
+
+Files required:
+sites.txt
+	Site,Lat,Lon,Altitude
+	Klerefontein,-30.97,21.98,1000
+	Kuntunse,5.75,-0.30,100
+starList.cat
+	datum Name       RA          DEC         Offset1      Offset2     Mag
+	J2000 TheOct    00:01:35.71 -77:03:56.9 -0:0:00.0042 -0:0:00.177  4.78
+	J2000 30Psc     00:01:57.60 -06:00:51.1 +0:0:00.0034 -0:0:00.041  4.41
+	J2000 2Cet      00:03:44.40 -17:20:10.0 +0:0:00.0017 -0:0:00.009  4.55
+	J2000 3Cet      00:04:30.10 -10:30:33.8 -0:0:00.0003 -0:0:00.011  4.94
+starLog.txt
+	StarName,Time
+	KapCen,2015-08-02-164753
+	KapCen,2015-08-02-164537
+	KapCen,2015-08-02-164355
+	DelLup,2015-08-02-170957
+	DelLup,2015-08-02-171031
+	DelLup,2015-08-02-171139
+	XiOph,2015-08-08-184444
+	XiOph,2015-08-08-184829
+	21Sgr,2015-08-08-195314
+	21Sgr,2015-08-08-194928
+	LamGru,2015-08-02-235037
+	LamGru,2015-08-02-235109
+
+To get the actual star positions you can use the following command:
+
+python findStars.py 80 2 2015/08/08 Klerefontein North >> StarPositions.txt
+
+where el=80, field of view =2degrees, site=Klerefontein, looking due North (i.e az=0)
+
+Grab images using 
+python grabImageContinuous.py
+This will grab images every 30 seconds. You need to decide after the fact which star is which using the findStars.py routine outlined before.
+
+
+Procedure:
+
+1) Calculate the azimuth rotation angle
+2) Calculate the scaling factor (pixels to degrees)
+3) Select a few images, and identify the names of stars in those images. Try to use instances where the star is near the estimated azimuth transit (either in North or South)
+	python findStars.py 80 2 2015/08/02 Klerefontein South >> StarPositions.txt
+4) Complete the starLog.txt file appropriately- remember it will use the time to identify the appropriate photographs to use
+5) python starPosition.py
+The centreAz, and centreEl give estimates of the actual position of the centre of the image
+         offAz       offEl  centreAz  centreEl  
+0   -0.7476526    -1.45574  175.1796  80.26179  
+1   -0.3551377   -1.464265  175.2734  80.25673  
+2  -0.05964867   -1.472574  175.3559  80.24279  
+3   -0.6513317  0.03285562    175.54  80.23574  
+4   -0.7543929  0.03469591  175.5835  80.23473  
+5     -0.95448  0.03675264   175.705  80.23027  
+6    -1.089098 -0.03058369 -4.268211   80.1827  
+7   -0.2673962 -0.03161144  -4.66126  80.17586  
+8   -0.1660936  -0.6413721 -4.658557  80.18339  
+9    -0.993831  -0.6387205 -4.550423  80.19861  
+10 -0.05567249    1.212349  175.0865  80.26676  
+11  -0.1526983    1.212566  175.2222  80.27503  
+
+ 
+
+
 
