@@ -1,0 +1,9 @@
+rotation angle on c-bass is 279 degrees
+
+To estimate the angle take to images at different positions, but mostly in azimuth movement
+
+Then calculate the star pixel positions (x1,y1), (x2,y2)
+
+Then dy=y2-y1 and dx=x2-x1
+dTheta = numpy.arctan(dy/dx)
+
