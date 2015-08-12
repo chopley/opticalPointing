@@ -1,5 +1,9 @@
 rotation angle on c-bass is 279 degrees
 
+20150802 - South at ~80degrees
+20150808 - North at ~80 degrees
+20150809 - North at 70 degrees
+
 To estimate the angle take two images at different positions, but mostly in azimuth movement
 
 Then calculate the star pixel positions (x1,y1), (x2,y2)
