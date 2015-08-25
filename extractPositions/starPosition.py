@@ -83,7 +83,8 @@ def analyseImage(image1,image2,rotAngle,interpValues):
 
 #values that require setting	
 #Angle of the azimuth axis to the Image horizontal axis
-rotationAngle=14.4
+#rotationAngle=numpy.radians(-14.4)
+rotationAngle=numpy.radians(104.4)
 #Number of pixels to one degree
 Scale=160.
 	

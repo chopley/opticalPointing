@@ -6,7 +6,7 @@
 #Written by Charles Copley,AVN Science
 
 
-#Rev 1.0 06/08/2015 
+#Rev 2.0 25/08/2015 
 
 
 import pandas,numpy,ephem,sys,cv2,datetime
@@ -82,17 +82,17 @@ def analyseImage(image1,image2,rotAngle,interpValues):
 	return (i1,i2,distanceScale)
 
 #values that require setting	
-#Angle of the azimuth axis to the Image horizontal axis
-rotationAngle=14.4
+#Angle (in radians) of the azimuth axis to the Image horizontal axis
+rotationAngle=numpy.radians(-90) # 90 degrees for the Ghana antenna
 #Number of pixels to one degree
-Scale=160.
+Scale=142.
 	
 #starName = sys.argv[1]
-starName = 'KapCen'
+#starName = 'KapCen'
 #date = sys.argv[3]
-date = '2015/08/02'
+#date = '2015/08/02'
 #siteName = sys.argv[2]
-siteName = 'Klerefontein'
+siteName = 'Kuntunse'
 
 #read in the list of possible observing sites
 sites = pandas.read_csv('sites.txt')
@@ -145,7 +145,7 @@ for i in range(0,len(starDetail)):
 	starDetail['offAz'][i]=xp1/Scale
 	starDetail['offEl'][i]=yp1/Scale
 	starDetail['centreEl'][i]=float(starDetail['El'][i])-float(starDetail['offEl'][i])
-	starDetail['centreAz'][i]=float(starDetail['Az'][i])+float(starDetail['offAz'][i])/numpy.cos(numpy.radians(80))
+	starDetail['centreAz'][i]=float(starDetail['Az'][i])+float(starDetail['offAz'][i])/numpy.cos(numpy.radians(starDetail['El'][i]))
 	if(float(starDetail['centreAz'][i])>180.):
 		starDetail['centreAz'][i]=starDetail['centreAz'][i]-360
 	
@@ -153,34 +153,34 @@ for i in range(0,len(starDetail)):
 
 	
 
-rotAngle=14.4
-print starDetail['StarName'][5], starDetail['StarName'][4]
+#rotAngle=14.4
+#print starDetail['StarName'][5], starDetail['StarName'][4]
 #first just check the rotation angle is correct- 
 # First make sure the two images are just azimuth movement
 # we want i1a[0]-i2a[0] to be close to zero. This implies zero elevation motion
-(i1a,i2a,distanceScalea)= analyseImage(starDetail['Image'][5],starDetail['Image'][4],rotAngle,(180,80))
-print i1a[0]-i2a[0],i1a[0]-i1a[1]
-print distanceScalea
+#(i1a,i2a,distanceScalea)= analyseImage(starDetail['Image'][5],starDetail['Image'][4],rotAngle,(180,80))
+#print i1a[0]-i2a[0],i1a[0]-i1a[1]
+#print distanceScalea
 
-(i1,i2,distanceScale)= analyseImage(starDetail['Image'][0],starDetail['Image'][5],rotAngle,(180,80))
-print (i1[0]-i2[0])/distanceScale,(i1[0]-i1[1])/distanceScale
-print distanceScale
+#(i1,i2,distanceScale)= analyseImage(starDetail['Image'][0],starDetail['Image'][5],rotAngle,(180,80))
+#print (i1[0]-i2[0])/distanceScale,(i1[0]-i1[1])/distanceScale
+#print distanceScale
 
-(i1,i2,distanceScale)= analyseImage(starDetail['Image'][8],starDetail['Image'][6],rotAngle,(0,80))
-print (i1[0]-i2[0])/distanceScale,(i1[0]-i1[1])/distanceScale
-print distanceScale
+#(i1,i2,distanceScale)= analyseImage(starDetail['Image'][8],starDetail['Image'][6],rotAngle,(0,80))
+#print (i1[0]-i2[0])/distanceScale,(i1[0]-i1[1])/distanceScale
+#print distanceScale
 
-(i1,i2,distanceScale)= analyseImage(starDetail['Image'][9],starDetail['Image'][6],rotAngle,(0,80))
-print (i1[0]-i2[0])/distanceScale,(i1[0]-i1[1])/distanceScale
-print distanceScale
+#(i1,i2,distanceScale)= analyseImage(starDetail['Image'][9],starDetail['Image'][6],rotAngle,(0,80))
+#print (i1[0]-i2[0])/distanceScale,(i1[0]-i1[1])/distanceScale
+#print distanceScale
 
-(i1,i2,distanceScale)= analyseImage(starDetail['Image'][7],starDetail['Image'][6],rotAngle,(0,80))
-print (i1[0]-i2[0])/distanceScale,(i1[0]-i1[1])/distanceScale
-print distanceScale
-
-
+#(i1,i2,distanceScale)= analyseImage(starDetail['Image'][7],starDetail['Image'][6],rotAngle,(0,80))
+#print (i1[0]-i2[0])/distanceScale,(i1[0]-i1[1])/distanceScale
+#print distanceScale
 
 
+
+print 'starDetail'
 print starDetail
 
 
